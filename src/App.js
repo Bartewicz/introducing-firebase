@@ -1,10 +1,12 @@
 import React from 'react'
+import TextField from 'material-ui/TextField'
 
-const url = 'https://jfddl4-sandbox.firebaseio.com/bartosz/counter/.json'
+const PATH = `https://jfddl4-sandbox.firebaseio.com/bartosz/`
 
 class App extends React.Component {
   state = {
-    counter: 0
+    counter: 0,
+    text: ''
   }
 
   componentDidMount() {
@@ -12,26 +14,51 @@ class App extends React.Component {
   }
 
   readFromDatabase = () => {
+    const url = `${PATH}/.json`
+
     return fetch(url)
       .then(r => r.json())
       .then((data) => this.setState({
-        counter: data
+        counter: data.counter,
+        text: data.text
       }))
   }
 
-  saveToDatabase = (data) => {
+  saveToDatabase = () => {
+    const url = `${PATH}/counter/.json`
+
     const fetchConfig = {
       method: "PUT",
-      body: JSON.stringify(data)
+      body: JSON.stringify(this.state.counter)
     }
 
     return fetch(url, fetchConfig)
-      .then(this.readFromDatabase)
   }
 
-  incHandler = () => this.saveToDatabase(this.state.counter + 1)
+  incHandler = () => {
+    this.setState({
+      counter: this.state.counter + 1
+    }, this.saveToDatabase
+    )
+  }
 
-  decHandler = () => this.saveToDatabase(this.state.counter - 1)
+  decHandler = () => {
+    this.setState({
+      counter: this.state.counter - 1
+    }, this.saveToDatabase
+    )
+  }
+
+  sendTextToDatabase = () => {
+    const url = `${PATH}/text/.json`
+
+    const fetchConfig = {
+      method: "PUT",
+      body: JSON.stringify(this.state.text)
+    }
+
+    return fetch(url, fetchConfig)
+  }
 
   render() {
     return (
@@ -39,6 +66,13 @@ class App extends React.Component {
         <h2>{this.state.counter}</h2>
         <button onClick={this.decHandler}>-</button>
         <button onClick={this.incHandler}>+</button>
+        <br />
+        <TextField
+          hintText="Input text"
+          onChange={(event, value) => this.setState({text: value})}
+          value={this.state.text}
+        />
+        <button onClick={() => this.sendTextToDatabase()}>Send</button>
       </div>
     )
   }
